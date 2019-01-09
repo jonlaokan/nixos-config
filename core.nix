@@ -3,84 +3,142 @@
 with lib;
 
 {
+  system.stateVersion = "18.09";
 
-# This value determines the NixOS release with which your system is to be
-# compatible, in order to avoid breaking some software such as database
-# servers. You should change this only after NixOS release notes say you
-# should.
-	system.stateVersion = "18.09"; # Did you read the comment?
+  # Keep only the last 500MiB of systemd journal
+  services.journald.extraConfig = "SystemMaxUse=500M";
 
-# Keep only the last 500MiB of systemd journal
-	services.journald.extraConfig = "SystemMaxUse=500M";
+  # Collect nix store garbage and optimise daily.
+  nix.gc.automatic = true;
+  nix.optimise.automatic = true;
 
-# Collect nix store garbage and optimise daily.
-	nix.gc.automatic = true;
-	nix.optimise.automatic = true;
+  # Enable passwd and co.
+  users.mutableUsers = true;
 
-# Enable passwd and co.
-	users.mutableUsers = true;
+  # Select internationalisation properties.
+  i18n = {
+    consoleKeyMap = "colemak";
+  };
 
-# Select internationalisation properties.
-	i18n = {
-		consoleFont = "Lat2-Terminus16";
-		consoleKeyMap = "us";
-		defaultLocale = "en_US.UTF-8";
-	};
+  time.timeZone = "Europe/Paris";
 
-# Set your time zone.
-	time.timeZone = "Europe/Paris";
+  networking.firewall = {
+    allowPing = true;
+  };
 
-	networking.firewall = {
-		allowPing = true;
-	};
+  services.openssh = {
+    enable = true;
+    passwordAuthentication = true;
+  };
 
-	services.openssh = {
-		enable = true;
-		passwordAuthentication = true;
-	};
+  programs.fish.enable = true;
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-   users.users.jonlaokan = {
-     isNormalUser = true;
-     uid = 1000;
-     home = "/home/jonlaokan";
-     createHome = true;
-     extraGroups = [ "wheel" "networkmanager" ];
-   };
+  users.users.jonlaokan = {
+    createHome = true;
+    extraGroups = [ "wheel" "networkmanager" ];
+    home = "/home/jonlaokan";
+    isNormalUser = true;
+    shell = pkgs.fish;
+    uid = 1000;
+  };
+
+  fonts = {
+    enableFontDir = true;
+    fonts = with pkgs; [
+      opensans-ttf
+      siji
+    ];
+  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
-   environment.systemPackages = with pkgs;
-     let
-	core = [
-	     wget
-	     vim
-	     neovim
-	     python36Packages.neovim
-	     nmap
-	     htop
-	     neofetch
-	     man-pages
-	     playerctl
-	     stow
-	     unzip
-	     #scrot 
-	     ranger
-	     #tree
-	];
+  environment.systemPackages = with pkgs;
+  let
+    core = [
+      # Dev
+      gnumake
+      gcc8
+      ghc
+      python37
+      jdk10
+      maven
 
-     noxserver = [];
+      # File manager 
+      ranger
 
-     xserver = [
-	     anki
-	     firefox
-	     qutebrowser
-	     zathura
-	     kitty
-	     feh
-	     mpv
-	     haskellPackages.xmobar
-     ];
+      # Text editor & shell
+      vim
+      neovim
+      fish
+      python36Packages.neovim
 
-     in core ++ (if config.services.xserver.enable then xserver else noxserver);
+      # Tools
+      htop
+      man-pages
+      neofetch
+      nmap
+      ponymix
+      sox
+      stow
+      tree
+      unzip
+      wget
+    ];
+
+    noxserver = [];
+
+    xserver = [
+      # Browser
+      firefox
+      qutebrowser
+
+      # Desktop UX
+      haskellPackages.xmobar
+
+      # Dev
+      android-studio
+
+      # File manager
+      xfce.thunar
+      xfce.thunar-dropbox-plugin
+      xfce.thunar-volman
+      xfce.thunar-archive-plugin
+
+      # Graphics
+      gimp
+      inkscape
+
+      # Misc
+      dunst
+      zathura
+      anki
+      redshift
+
+      # Services
+      dropbox
+
+      # Theming
+      (lxappearance.overrideAttrs(old:
+      rec {
+        name = "lxappearance-0.6.2";
+        src = fetchurl {
+          url = "mirror://sourceforge/project/lxde/LXAppearance/${name}.tar.xz";
+          sha256 = "07r0xbi6504zjnbpan7zrn7gi4j0kbsqqfpj8v2x94gr05p16qj4";
+        };
+      }))
+
+      # Tools
+      compton
+      maim 
+      xorg.xbacklight
+      termite
+      rofi
+      feh
+      mpv
+      xclip
+      xdotool
+      zip
+    ];
+
+  in core ++ (if config.services.xserver.enable then xserver else noxserver);
 }
