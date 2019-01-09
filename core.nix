@@ -132,14 +132,15 @@ with lib;
 
       # Tools
       compton
-      maim 
-      xorg.xbacklight
-      termite
-      rofi
       feh
+      imagemagick7
+      maim 
       mpv
+      rofi
+      termite
       xclip
       xdotool
+      xorg.xbacklight
       zip
     ];
 
