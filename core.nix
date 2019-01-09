@@ -97,6 +97,9 @@ with lib;
 
       # Dev
       android-studio
+      jetbrains.idea-ultimate
+      netbeans
+      vscode
 
       # File manager
       xfce.thunar
