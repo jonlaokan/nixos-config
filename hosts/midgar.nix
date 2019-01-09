@@ -8,15 +8,26 @@
       ./services/xserver.nix
     ];
 
-  networking.hostName = "midgar"; # Define your hostname.
+  # Use the systemd-boot EFI boot loader.
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
 
-  # Use the GRUB 2 boot loader.
-  boot.loader.grub.enable = true;
-  boot.loader.grub.version = 2;
-  boot.loader.grub.device = "/dev/sda";
- 
-  # Enables wireless support via wpa_supplicant.
-  networking.wireless.enable = true; 
+  # Touchpad support
+  services.xserver.synaptics = {
+    enable = true;
+    dev = "/dev/input/event*";
+    twoFingerScroll = true;
+    accelFactor = "0.001";
+    buttonsMap = [ 1 3 2 ];
+  };
+
+  security.sudo.enable = true;
+
+  networking.hostName = "midgar"; 
+  networking.networkmanager.enable = true;
+  networking.firewall.enable = true;
+
+  nixpkgs.config.allowUnfree = true;
 
   # Enable sound.
   sound.enable = true;
@@ -28,12 +39,15 @@
 	  powerOnBoot = true;
   };
 
-  # Firewall
-  networking.firewall.enable = true;
+  # Specific services
+  services.tlp.enable = true;
+  services.thermald.enable = true;
 
   environment.systemPackages = with pkgs; [
-    compton
-    scrot
-    tree
+    # Tool
+    kbdlight
+    playerctl
+    tlp
+    thermald
   ];
 }
